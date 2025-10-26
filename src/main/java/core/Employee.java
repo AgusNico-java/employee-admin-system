@@ -1,16 +1,26 @@
 package core;
 
+import java.util.Date;
+
 public class Employee {
     public String name;
     public String id;
-    public String position;
+    public String role;
 
-    public Employee() {
-    }
+    public Date employmentDate;
+    public Date birthdayDate;
 
-    public Employee(String name, String id, String position) {
+    public boolean isAdmin;
+    public boolean canManageFood;
+
+    public Employee(String name, String id, String role, Date employmentDate, Date birthdayDate, boolean isAdmin, boolean canManageFood) {
         this.name = name;
         this.id = id;
-        this.position = position;
+        this.role = role;
+        this.employmentDate = employmentDate;
+        this.birthdayDate = birthdayDate;
+        this.isAdmin = isAdmin;
+        this.canManageFood = canManageFood;
     }
+
 }
