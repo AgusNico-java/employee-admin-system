@@ -3,9 +3,9 @@ package core;
 import interfaces.Endpoints;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
@@ -29,6 +29,7 @@ public class API extends AbstractVerticle {
 
     private void deployEndpoints() {
         Router router = Router.router(vertx);
+        router.route().handler(BodyHandler.create());
 
         deployGetEndpoints(router);
         deployPostEndpoints(router);
@@ -43,10 +44,10 @@ public class API extends AbstractVerticle {
             router.get(endpoints.get().get(endpoint))
                 .handler(rc -> {
                     String handler = Cons.GET_REQUEST_PREFIX + endpoint;
-                    HttpServerRequest request = rc.request();
                     StringBuilder response = new StringBuilder();
+                    JsonObject requestBody = rc.getBodyAsJson();
 
-                    bus.request(handler, request, ar -> {
+                    bus.request(handler, requestBody, ar -> {
                         if (ar.succeeded()) {
                             response.append(ar.result().body().toString());
                         } else {
@@ -62,18 +63,19 @@ public class API extends AbstractVerticle {
     private void deployPostEndpoints(Router router) {
         for (String endpoint : endpoints.post().keySet()) {
             router.post(endpoints.post().get(endpoint))
+                    .consumes(Cons.APPLICATION_JSON)
+                    .produces(Cons.APPLICATION_JSON)
                     .handler(rc -> {
                        String handler = Cons.POST_REQUEST_PREFIX + endpoint;
-                       HttpServerRequest request = rc.request();
+                       JsonObject request = rc.getBodyAsJson();
                        StringBuilder response = new StringBuilder();
 
-                       bus.request(handler, request, ar -> {
+                        bus.request(handler, request, ar -> {
                            if (ar.succeeded()) {
                                response.append(ar.result().body().toString());
                            } else {
                                response.append(ar.cause().getMessage());
                            }
-                           log.info(response.toString());
                            rc.response().end(response.toString());
                        });
                     });
